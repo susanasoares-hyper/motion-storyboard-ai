@@ -823,7 +823,7 @@ CONTEXTO DO PROJETO:
           <div ref={documentRef} id="storyboard-document" className="w-full bg-[#0A0A0A]" style={{ WebkitPrintColorAdjust: "exact", printColorAdjust: "exact" } as any}>
 
             {/* Document header */}
-            <div className="border-b border-zinc-800 px-8 py-6 bg-[#0F0F0F]">
+            <div className="doc-header border-b border-zinc-800 px-8 py-6 bg-[#0F0F0F]">
               <div className="max-w-[1400px] mx-auto">
                 <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-600 mb-1">HYPER · STORYBOARD DE MOTION</div>
                 <h1 className="text-3xl font-bold font-display text-white mb-2">{storyboard.title}</h1>
@@ -856,14 +856,14 @@ CONTEXTO DO PROJETO:
 
             {/* Scene groups */}
             {sceneGroups.map((group, sceneIdx) => (
-              <div key={group.name} className="border-b border-zinc-800/60">
+              <div key={group.name} className="scene-group border-b border-zinc-800/60">
                 <div className="max-w-[1400px] mx-auto">
-                  <div className="flex items-center gap-3 px-8 py-3 border-b border-zinc-800/60 bg-zinc-900/30">
+                  <div className="scene-header flex items-center gap-3 px-8 py-3 border-b border-zinc-800/60 bg-zinc-900/30">
                     <span className="bg-zinc-800 text-zinc-300 text-[10px] font-mono font-bold px-2.5 py-1 rounded tracking-wider shrink-0">CENA {sceneIdx + 1}</span>
                     <h2 className="font-semibold text-zinc-200 font-display text-sm flex-1">{group.name}</h2>
                     <span className="text-zinc-600 text-[10px] font-mono shrink-0">{group.shots.length} shot{group.shots.length > 1 ? "s" : ""}</span>
                   </div>
-                  <div className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="shot-grid p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {group.shots.map((shot, shotIdx) => (
                       <ShotCard key={shot.id} shot={shot} sceneIdx={sceneIdx} shotIdx={shotIdx}
                         isGeneratingImage={!!imageGeneratingState[shot.id]}
@@ -886,7 +886,7 @@ CONTEXTO DO PROJETO:
             ))}
 
             {/* Production notes */}
-            <div className="px-8 py-6 bg-[#0F0F0F]">
+            <div className="production-notes px-8 py-6 bg-[#0F0F0F]">
               <div className="max-w-[1400px] mx-auto">
                 <div className="flex items-center gap-2 mb-4 border-b border-zinc-800 pb-3">
                   <Music className="h-4 w-4 text-[#FF4E00]" />
