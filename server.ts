@@ -166,7 +166,28 @@ INSTRUÇÕES EXTRAS:
   }
 });
 
-// 2. FRAME IMAGE GENERATION
+// 2. SUGGEST CONFIG
+app.post("/api/suggest-config", async (req: Request, res: Response) => {
+  try {
+    const { briefing } = req.body;
+    if (!briefing) { res.status(400).json({ error: "Briefing required" }); return; }
+
+    const ai = getGeminiAI();
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: `Analise este briefing/roteiro e sugira configurações para um storyboard de motion design. Responda APENAS com JSON válido, sem markdown.\n\nBriefing:\n${briefing}\n\nRetorne exatamente este formato:\n{\n  "duration": "30s",\n  "tones": ["Energético", "Inspirador"],\n  "audiences": ["B2B", "Empresários"],\n  "purpose": "ADS",\n  "colorPreset": "Tecnologia",\n  "style": "Comercial Cinematográfico"\n}\n\nValores válidos:\n- duration: 15s, 30s, 45s, 60s, 90s, 2min, 3min+\n- tones (máx 3): Urgente, Emocional, Autoridade, Premium, Inspirador, Luxuoso, Energético, Documental, Humorístico, Educativo\n- audiences (máx 3): B2B, Empresários, Donos de Agência, Criadores de Conteúdo, Infoprodutores, E-commerce, Atletas, Consumidor Final\n- purpose: ADS, Orgânico, Branding, Educacional\n- colorPreset: Minimalista, Corporativo, Luxo, Tecnologia, Esportivo, Cinema\n- style: Comercial Cinematográfico, Minimalista Tech (Dark / Glass), 3D Chrome (Octane Render), Cyberpunk Neon, UI Motion (App / SaaS), Esboço Editorial`,
+      config: { responseMimeType: "application/json", temperature: 0.3 }
+    });
+
+    const json = JSON.parse(response.text || "{}");
+    res.json(json);
+  } catch (error: any) {
+    console.error("Suggest config error:", error);
+    res.status(500).json({ error: "Failed to suggest config" });
+  }
+});
+
+// 3. FRAME IMAGE GENERATION
 app.post("/api/generate-frame", async (req: Request, res: Response) => {
   try {
     const { prompt, aspectRatio } = req.body;
