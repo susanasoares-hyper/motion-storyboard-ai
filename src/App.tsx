@@ -15,23 +15,16 @@ const DURATION_OPTIONS = ["15s", "30s", "45s", "60s", "90s", "2min", "3min+"];
 const PURPOSE_OPTIONS = ["ADS", "Orgânico", "Branding", "Educacional"] as const;
 const STYLE_OPTIONS = ["Comercial Cinematográfico", "Minimalista Tech (Dark / Glass)", "3D Chrome (Octane Render)", "Cyberpunk Neon", "UI Motion (App / SaaS)", "Esboço Editorial"];
 
-const COLOR_PRESETS: Record<string, string[]> = {
-  "Minimalista": ["#FAFAFA", "#E5E5E5", "#737373", "#171717", "#0A0A0A"],
-  "Corporativo": ["#1E3A5F", "#2563EB", "#3B82F6", "#BFDBFE", "#F0F9FF"],
-  "Luxo":        ["#1C1208", "#7C5C2B", "#C9A96E", "#E8D5B7", "#FEFCF8"],
-  "Tecnologia":  ["#090A0F", "#1E293B", "#F59E0B", "#38BDF8", "#F1F5F9"],
-  "Esportivo":   ["#0F0F0F", "#DC2626", "#EF4444", "#FCA5A5", "#FFFFFF"],
-  "Cinema":      ["#0A0805", "#4A3728", "#8B6448", "#D4A76A", "#F5E6CC"],
-};
-
 type Purpose = typeof PURPOSE_OPTIONS[number];
+
+const DEFAULT_PALETTE = ["#090A0F", "#1E293B", "#F59E0B", "#38BDF8", "#F1F5F9"];
 
 interface ProjectConfig {
   duration: string;
   tones: string[];
   audiences: string[];
   purpose: Purpose;
-  colorPreset: string;
+  colorPalette: string[];
   style: string;
   aspectRatio: "16:9" | "9:16";
 }
@@ -41,7 +34,7 @@ const DEFAULT_CONFIG: ProjectConfig = {
   tones: [],
   audiences: [],
   purpose: "ADS",
-  colorPreset: "Tecnologia",
+  colorPalette: [...DEFAULT_PALETTE],
   style: "Comercial Cinematográfico",
   aspectRatio: "16:9",
 };
@@ -104,7 +97,7 @@ function ProjectConfigPanel({
 }) {
   const toggleTone = (t: string) => onChange({ tones: config.tones.includes(t) ? config.tones.filter(x => x !== t) : [...config.tones, t] });
   const toggleAudience = (a: string) => onChange({ audiences: config.audiences.includes(a) ? config.audiences.filter(x => x !== a) : [...config.audiences, a] });
-  const palette = COLOR_PRESETS[config.colorPreset] || COLOR_PRESETS["Tecnologia"];
+  const palette = config.colorPalette;
   const estimated = estimateScenes(config.duration);
 
   return (
@@ -230,31 +223,27 @@ function ProjectConfigPanel({
 
           {/* Paleta de cores */}
           <div className="flex flex-col gap-2">
-            <span className="text-[9px] font-mono uppercase tracking-[0.18em] text-zinc-600">Paleta de Cores</span>
-            <div className="flex flex-col gap-1.5">
-              {Object.entries(COLOR_PRESETS).map(([name, colors]) => {
-                const active = config.colorPreset === name;
-                return (
-                  <button key={name} onClick={() => onChange({ colorPreset: name })}
-                    className={`flex items-center gap-2.5 px-3 py-2 rounded-xl cursor-pointer transition-all duration-150 border group ${active
-                      ? "bg-white/[0.07] border-white/[0.15]"
-                      : "bg-white/[0.02] border-transparent hover:bg-white/[0.04] hover:border-white/[0.08]"}`}>
-                    <div className="flex gap-0.5 shrink-0">
-                      {colors.map((c, i) => (
-                        <div key={i} className="h-3.5 w-3.5 rounded-sm border border-white/10 transition-transform duration-150 group-hover:scale-110"
-                          style={{ backgroundColor: c, boxShadow: active ? `0 0 6px ${c}60` : undefined }} />
-                      ))}
-                    </div>
-                    <span className={`text-[10px] font-medium transition-colors flex-1 text-left ${active ? "text-zinc-200" : "text-zinc-600 group-hover:text-zinc-400"}`}>{name}</span>
-                    {active && <Check className="h-3 w-3 text-[#FF4E00] shrink-0" />}
-                  </button>
-                );
-              })}
+            <div className="flex items-center justify-between">
+              <span className="text-[9px] font-mono uppercase tracking-[0.18em] text-zinc-600">Paleta de Cores</span>
+              <button onClick={() => onChange({ colorPalette: [...DEFAULT_PALETTE] })}
+                className="text-[9px] text-zinc-700 hover:text-zinc-400 transition cursor-pointer font-mono">
+                resetar
+              </button>
             </div>
-            {/* Active palette preview */}
-            <div className="flex gap-1 mt-1 px-1">
-              {palette.map((c, i) => (
-                <div key={i} className="flex-1 h-2 rounded-full" style={{ backgroundColor: c }} />
+            <div className="flex gap-2">
+              {config.colorPalette.map((color, i) => (
+                <label key={i} className="relative flex-1 cursor-pointer group/swatch">
+                  <input type="color" value={color}
+                    onChange={e => {
+                      const next = [...config.colorPalette];
+                      next[i] = e.target.value;
+                      onChange({ colorPalette: next });
+                    }}
+                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
+                  <div className="h-10 rounded-lg border-2 border-transparent group-hover/swatch:border-white/20 transition-all duration-150"
+                    style={{ backgroundColor: color, boxShadow: `0 0 10px ${color}50` }} />
+                  <span className="block text-center text-[8px] font-mono text-zinc-700 group-hover/swatch:text-zinc-500 mt-1 transition-colors truncate">{color}</span>
+                </label>
               ))}
             </div>
           </div>
@@ -530,13 +519,21 @@ export default function App() {
       });
       if (!res.ok) throw new Error();
       const data = await res.json();
+      const presetMap: Record<string, string[]> = {
+        "Minimalista": ["#FAFAFA","#E5E5E5","#737373","#171717","#0A0A0A"],
+        "Corporativo": ["#1E3A5F","#2563EB","#3B82F6","#BFDBFE","#F0F9FF"],
+        "Luxo":        ["#1C1208","#7C5C2B","#C9A96E","#E8D5B7","#FEFCF8"],
+        "Tecnologia":  ["#090A0F","#1E293B","#F59E0B","#38BDF8","#F1F5F9"],
+        "Esportivo":   ["#0F0F0F","#DC2626","#EF4444","#FCA5A5","#FFFFFF"],
+        "Cinema":      ["#0A0805","#4A3728","#8B6448","#D4A76A","#F5E6CC"],
+      };
       setConfig(prev => ({
         ...prev,
         duration: data.duration || prev.duration,
         tones: data.tones?.length ? data.tones : prev.tones,
         audiences: data.audiences?.length ? data.audiences : prev.audiences,
         purpose: data.purpose || prev.purpose,
-        colorPreset: data.colorPreset || prev.colorPreset,
+        colorPalette: data.colorPreset && presetMap[data.colorPreset] ? presetMap[data.colorPreset] : prev.colorPalette,
         style: data.style || prev.style,
       }));
     } catch {
@@ -549,7 +546,7 @@ export default function App() {
         tones: hasUrgency ? ["Urgente", "Energético"] : hasPremium ? ["Premium", "Luxuoso"] : ["Inspirador"],
         audiences: hasB2B ? ["B2B", "Empresários"] : ["Consumidor Final"],
         duration: prev.duration || "30s",
-        colorPreset: hasPremium ? "Luxo" : "Tecnologia",
+        colorPalette: hasPremium ? ["#1C1208","#7C5C2B","#C9A96E","#E8D5B7","#FEFCF8"] : ["#090A0F","#1E293B","#F59E0B","#38BDF8","#F1F5F9"],
       }));
     } finally {
       setIsSuggestingConfig(false);
@@ -619,7 +616,7 @@ export default function App() {
     const blocks = text.split(/\n\n+/).filter(s => s.length > 15);
     const count = Math.max(4, Math.min(8, blocks.length));
     const scenes = ["Abertura — Impacto inicial", "Desenvolvimento — Argumento central", "Evidências — Resultados e prova social", "Encerramento — CTA final"];
-    const palette = COLOR_PRESETS[config.colorPreset] || COLOR_PRESETS["Tecnologia"];
+    const palette = config.colorPalette;
     const shots: Shot[] = Array.from({ length: count }, (_, i) => ({
       id: `shot-fb-${i}-${Date.now()}`, shotNumber: i + 1,
       scene: scenes[Math.floor(i / 2) % scenes.length],
@@ -658,7 +655,7 @@ CONTEXTO DO PROJETO:
 - Público: ${config.audiences.join(", ") || "não definido"}
 - Propósito: ${config.purpose}
 - Estilo Visual: ${config.style}
-- Paleta: ${config.colorPreset}`;
+- Paleta: ${config.colorPalette.join(", ")}`;
 
     try {
       const res = await fetch("/api/storyboard", {
@@ -671,7 +668,7 @@ CONTEXTO DO PROJETO:
       const result = await res.json();
       if (!result?.shots?.length) throw new Error("Estrutura inválida");
 
-      const palette = COLOR_PRESETS[config.colorPreset] || result.visualDirection?.colorPalette || COLOR_PRESETS["Tecnologia"];
+      const palette = config.colorPalette;
       const shots: Shot[] = result.shots.map((s: Partial<Shot>, i: number) => {
         const num = s.shotNumber || (i + 1);
         const q = encodeURIComponent(`${config.style}: ${s.aiImagePrompt || s.visualDescription}`);
