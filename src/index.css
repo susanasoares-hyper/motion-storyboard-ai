@@ -47,7 +47,8 @@ body {
     font-size: 11px !important;
   }
 
-  .no-print {
+  .no-print,
+  .export-hide {
     display: none !important;
   }
 
