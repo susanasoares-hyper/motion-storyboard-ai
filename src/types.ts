@@ -15,6 +15,7 @@ export interface ProductionNotes {
 export interface Shot {
   id: string;
   shotNumber: number;
+  scene?: string;
   duration: string;
   goal: string;
   visualDescription: string;
