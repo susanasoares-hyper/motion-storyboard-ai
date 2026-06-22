@@ -1,10 +1,9 @@
 import React, { useState, useMemo, useRef, useCallback } from "react";
-import html2canvas from "html2canvas";
 import {
-  Sparkles, Plus, Trash2, Clock, Camera, Video,
+  Sparkles, Plus, Trash2, Clock,
   Music, Volume2, Edit, RefreshCw, Sliders, AlertCircle,
   Upload, X, FileText, ChevronLeft, ChevronRight,
-  Film, Image, FileDown, Printer
+  Film, Printer, Users, Target, Palette, LayoutGrid
 } from "lucide-react";
 import { Storyboard, Shot } from "./types";
 import { INITIAL_STORYBOARD } from "./data";
@@ -265,7 +264,7 @@ export default function App() {
   const [imageGeneratingState, setImageGeneratingState] = useState<Record<string, boolean>>({});
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [warningMessage, setWarningMessage] = useState<string | null>(null);
-  const [isExporting, setIsExporting] = useState(false);
+  const [selectedPurpose, setSelectedPurpose] = useState<"ADS" | "Orgânico">("ADS");
 
   const documentRef = useRef<HTMLDivElement>(null);
   const briefingRef = useRef<HTMLDivElement>(null);
@@ -340,40 +339,6 @@ export default function App() {
 
   const exportAsPDF = () => window.print();
 
-  const exportAsImage = useCallback(async (format: "png" | "jpg") => {
-    const el = documentRef.current;
-    if (!el) return;
-    setIsExporting(true);
-
-    // Hide interactive elements during capture
-    const hideEls = document.querySelectorAll<HTMLElement>(".export-hide");
-    hideEls.forEach(e => { e.dataset.prevDisplay = e.style.display; e.style.display = "none"; });
-
-    try {
-      const canvas = await html2canvas(el, {
-        backgroundColor: "#0A0A0A",
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
-        windowWidth: el.scrollWidth,
-        windowHeight: el.scrollHeight
-      });
-      const mime = format === "png" ? "image/png" : "image/jpeg";
-      const quality = format === "jpg" ? 0.93 : undefined;
-      const url = canvas.toDataURL(mime, quality);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${storyboard.title || "storyboard"}.${format}`;
-      a.click();
-    } catch (e) {
-      alert("Erro ao exportar imagem. Tente usar 'Exportar PDF'.");
-    } finally {
-      hideEls.forEach(e => { e.style.display = e.dataset.prevDisplay || ""; });
-      setIsExporting(false);
-    }
-  }, [storyboard.title]);
-
   // ── Generate storyboard ───────────────────────────────────────────────────────
 
   const fallback = useCallback((text: string, style: string, aspect: "16:9" | "9:16") => {
@@ -447,15 +412,7 @@ export default function App() {
             <>
               <button onClick={exportAsPDF}
                 className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded bg-zinc-800 border border-zinc-700 text-zinc-200 hover:bg-zinc-700 transition cursor-pointer font-medium">
-                <Printer className="h-3.5 w-3.5" /> PDF
-              </button>
-              <button onClick={() => exportAsImage("png")} disabled={isExporting}
-                className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded bg-zinc-800 border border-zinc-700 text-zinc-200 hover:bg-zinc-700 transition cursor-pointer font-medium disabled:opacity-50">
-                <Image className="h-3.5 w-3.5" /> PNG
-              </button>
-              <button onClick={() => exportAsImage("jpg")} disabled={isExporting}
-                className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded bg-zinc-800 border border-zinc-700 text-zinc-200 hover:bg-zinc-700 transition cursor-pointer font-medium disabled:opacity-50">
-                <FileDown className="h-3.5 w-3.5" /> JPG
+                <Printer className="h-3.5 w-3.5" /> Exportar PDF
               </button>
               <button onClick={() => briefingRef.current?.scrollIntoView({ behavior: "smooth" })}
                 className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded bg-[#FF4E00] hover:brightness-110 text-white font-bold transition cursor-pointer">
@@ -505,21 +462,85 @@ export default function App() {
             <FileUploadZone files={uploadedFiles} onAdd={f => setUploadedFiles(p => [...p, ...f])} onRemove={id => setUploadedFiles(p => p.filter(f => f.id !== id))} />
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-              <div className="lg:col-span-9 relative">
-                <textarea value={userInput} rows={6} onChange={e => setUserInput(e.target.value)}
-                  placeholder="Cole seu roteiro, briefing, transcrição de VSL, script de anúncio ou ideias de campanha..."
-                  className="bg-zinc-950 border border-zinc-800 focus:border-[#FF4E00] focus:ring-1 focus:ring-[#FF4E00] rounded-xl p-4 text-sm text-zinc-200 outline-none w-full resize-none font-serif h-[140px]" />
-                {isGenerating && (
-                  <div className="absolute inset-0 bg-[#0A0A0A]/95 backdrop-blur rounded-xl flex flex-col items-center justify-center gap-3 text-[#FF4E00]">
-                    <RefreshCw className="h-8 w-8 animate-spin" />
-                    <span className="text-xs font-mono font-bold tracking-widest uppercase">{generatingStatus}</span>
+              <div className="lg:col-span-9 flex flex-col gap-3">
+                <div className="relative">
+                  <textarea value={userInput} rows={6} onChange={e => setUserInput(e.target.value)}
+                    placeholder="Cole seu roteiro, briefing, transcrição de VSL, script de anúncio ou ideias de campanha..."
+                    className="bg-zinc-950 border border-zinc-800 focus:border-[#FF4E00] focus:ring-1 focus:ring-[#FF4E00] rounded-xl p-4 text-sm text-zinc-200 outline-none w-full resize-none font-serif h-[140px]" />
+                  {isGenerating && (
+                    <div className="absolute inset-0 bg-[#0A0A0A]/95 backdrop-blur rounded-xl flex flex-col items-center justify-center gap-3 text-[#FF4E00]">
+                      <RefreshCw className="h-8 w-8 animate-spin" />
+                      <span className="text-xs font-mono font-bold tracking-widest uppercase">{generatingStatus}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Metadata panel */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-[11px]">
+                  {/* Duração */}
+                  <div className="bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2.5 flex flex-col gap-1">
+                    <span className="text-[9px] font-mono uppercase tracking-widest text-zinc-600 flex items-center gap-1">
+                      <Clock className="h-2.5 w-2.5" /> Duração
+                    </span>
+                    <span className="text-zinc-300 font-medium">{storyboard.duration || "—"}</span>
                   </div>
-                )}
+                  {/* Tom */}
+                  <div className="bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2.5 flex flex-col gap-1">
+                    <span className="text-[9px] font-mono uppercase tracking-widest text-zinc-600 flex items-center gap-1">
+                      <Music className="h-2.5 w-2.5" /> Tom
+                    </span>
+                    <span className="text-zinc-300 font-medium">{storyboard.tone || "—"}</span>
+                  </div>
+                  {/* Público */}
+                  <div className="bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2.5 flex flex-col gap-1">
+                    <span className="text-[9px] font-mono uppercase tracking-widest text-zinc-600 flex items-center gap-1">
+                      <Users className="h-2.5 w-2.5" /> Público
+                    </span>
+                    <span className="text-zinc-300 font-medium truncate">{storyboard.targetAudience || "—"}</span>
+                  </div>
+                  {/* Paleta */}
+                  <div className="bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2.5 flex flex-col gap-1.5">
+                    <span className="text-[9px] font-mono uppercase tracking-widest text-zinc-600 flex items-center gap-1">
+                      <Palette className="h-2.5 w-2.5" /> Paleta de Cores
+                    </span>
+                    <div className="flex gap-1.5 items-center">
+                      {storyboard.visualDirection.colorPalette.length > 0
+                        ? storyboard.visualDirection.colorPalette.map((c, i) => (
+                          <div key={i} className="h-4 w-4 rounded border border-zinc-700 shrink-0" style={{ backgroundColor: c }} title={c} />
+                        ))
+                        : <span className="text-zinc-600">—</span>}
+                    </div>
+                  </div>
+                  {/* Propósito */}
+                  <div className="bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2.5 flex flex-col gap-1.5">
+                    <span className="text-[9px] font-mono uppercase tracking-widest text-zinc-600 flex items-center gap-1">
+                      <Target className="h-2.5 w-2.5" /> Propósito
+                    </span>
+                    <div className="flex gap-1.5">
+                      {(["ADS", "Orgânico"] as const).map(p => (
+                        <button key={p} onClick={() => setSelectedPurpose(p)}
+                          className={`text-[10px] px-2 py-0.5 rounded font-mono font-bold cursor-pointer transition ${selectedPurpose === p ? "bg-[#FF4E00] text-white" : "bg-zinc-800 text-zinc-500 hover:text-zinc-300"}`}>
+                          {p}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  {/* Shots / Cenas */}
+                  <div className="bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2.5 flex flex-col gap-1">
+                    <span className="text-[9px] font-mono uppercase tracking-widest text-zinc-600 flex items-center gap-1">
+                      <LayoutGrid className="h-2.5 w-2.5" /> Shots / Cenas
+                    </span>
+                    <span className="text-zinc-300 font-medium">
+                      {hasShots ? `${storyboard.shots.length} shots · ${sceneGroups.length} cenas` : "—"}
+                    </span>
+                  </div>
+                </div>
               </div>
+
               <div className="lg:col-span-3 flex flex-col gap-3">
                 <div className="bg-zinc-950/60 rounded-xl border border-zinc-800 p-3 text-[11px] text-zinc-400 flex flex-col gap-1.5">
                   <div className="text-zinc-300 font-semibold text-xs mb-1 flex items-center gap-1.5"><Film className="h-3.5 w-3.5 text-[#FF4E00]" />Como usar</div>
-                  {["Cole roteiro ou briefing", "Adicione PDFs de referência", "IA gera o storyboard visual", "Exporte como PDF, PNG ou JPG"].map(t => (
+                  {["Cole roteiro ou briefing", "Adicione PDFs de referência", "IA gera o storyboard visual", "Exporte o documento em PDF"].map(t => (
                     <div key={t} className="flex items-start gap-1.5"><span className="text-[#FF4E00] shrink-0">✔</span>{t}</div>
                   ))}
                 </div>
@@ -666,14 +687,6 @@ export default function App() {
           onNavigate={navigateModal} />
       )}
 
-      {isExporting && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur flex items-center justify-center">
-          <div className="bg-zinc-900 border border-zinc-700 rounded-2xl px-8 py-6 flex items-center gap-4">
-            <RefreshCw className="h-6 w-6 animate-spin text-[#FF4E00]" />
-            <span className="text-sm font-medium text-white">Exportando imagem...</span>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
