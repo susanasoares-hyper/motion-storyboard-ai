@@ -1,0 +1,6 @@
+{
+  "name": "Motion Storyboard AI",
+  "description": "An interactive full-stack storyboard generator that transforms scripts, marketing briefs, and voiceovers into cinematic, production-ready video treatments, visual shot listings, and shareable PDF storyboard decks.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

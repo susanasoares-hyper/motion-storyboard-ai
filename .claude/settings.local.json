@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(run)",
+      "Skill(run:*)",
+      "mcp__Claude_Preview__preview_start",
+      "mcp__Claude_in_Chrome__tabs_context_mcp",
+      "PowerShell(railway --version)",
+      "PowerShell(Start-Sleep -Seconds 5; try { $r = Invoke-WebRequest -Uri \"https://clever-spirit-production-b4ae.up.railway.app\" -TimeoutSec 15 -UseBasicParsing; \"Status: $\\($r.StatusCode\\)\" } catch { \"Error: $\\($_.Exception.Message\\)\" })",
+      "PowerShell(try { $r = Invoke-WebRequest -Uri \"https://clever-spirit-production-b4ae.up.railway.app\" -TimeoutSec 15 -UseBasicParsing; $r.Content.Substring\\(0,200\\) } catch { $_.Exception.Message })"
+    ]
+  }
+}

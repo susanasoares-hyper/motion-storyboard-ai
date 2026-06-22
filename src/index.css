@@ -1,0 +1,85 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+@layer utilities {
+  /* Premium horizontal scrollbar styling for the Higgsfield card deck */
+  .custom-scrollbar::-webkit-scrollbar {
+    height: 8px;
+    width: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(15, 17, 26, 0.5);
+    border-radius: 999px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(100, 116, 139, 0.4);
+    border-radius: 999px;
+    border: 2px solid rgba(15, 17, 26, 0.5);
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(100, 116, 139, 0.7);
+  }
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #0A0A0A;
+  color: #d4d4d8; /* zinc-300 */
+  letter-spacing: -0.011em;
+  overflow-x: hidden;
+}
+
+/* Print CSS Stylesheet - guarantees a stunning and premium PDF format */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+    font-size: 12px !important;
+  }
+  
+  .no-print {
+    display: none !important;
+  }
+  
+  .print-only {
+    display: block !important;
+  }
+
+  .print-page-break {
+    page-break-before: always;
+    break-before: page;
+  }
+
+  .print-card-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 1.5rem !important;
+  }
+
+  .print-card {
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 0.5rem !important;
+    overflow: hidden !important;
+    page-break-inside: avoid !important;
+    background: #ffffff !important;
+    color: #1e293b !important;
+  }
+
+  .print-header {
+    border-bottom: 2px solid #0f172a !important;
+    padding-bottom: 1rem !important;
+    margin-bottom: 2rem !important;
+  }
+
+  /* Force display backgrounds on print */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
